@@ -1,12 +1,15 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using UserContactProject.Interfaces;
 using UserContactsApi.Data;
+using UserContactsApi.Dtos;
 using UserContactsApi.Endpoints;
 using UserContactsApi.Interfaces;
 using UserContactsApi.Models;
 using UserContactsApi.Repositories;
 using UserContactsApi.Services;
+using UserContactsApi.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +33,7 @@ builder.Services.AddSwaggerGen(c =>
 
 // Register the in-memory database
 builder.Services.AddDbContext<UserContactsDbContext>(options => options.UseInMemoryDatabase("items"));
-
+builder.Services.AddScoped<IValidator<ContactDto>, ContactValidator>();
 builder.Services.AddScoped<IUserContactRepository, UserContactRepository>();
 builder.Services.AddScoped<IUserContactService, UserContactService>();
 

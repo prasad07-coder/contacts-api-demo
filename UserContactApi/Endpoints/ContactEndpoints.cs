@@ -1,5 +1,6 @@
 ﻿namespace UserContactsApi.Endpoints
 {
+    using FluentValidation;
     using UserContactsApi.Dtos;
     using UserContactsApi.Interfaces;
 
@@ -28,17 +29,31 @@
             });
 
             // POST a new contact
-            routes.MapPost("/contacts", async (ContactDto contactDto, IUserContactService contactService) =>
+            routes.MapPost("/contacts", async (ContactDto contactDto, IUserContactService contactService, IValidator<ContactDto> validator) =>
             {
                 ArgumentNullException.ThrowIfNull(contactDto);
+
+                // Validate contactDto using ContactValidator
+                var validationResult = await validator.ValidateAsync(contactDto);
+                if (!validationResult.IsValid)
+                {
+                    return Results.ValidationProblem(validationResult.ToDictionary());
+                }
 
                 await contactService.AddContactAsync(contactDto);
                 return Results.Created($"/contacts/{contactDto.Id}", contactDto);
             });
 
             // PUT to update a contact
-            routes.MapPut("/contacts", async (ContactDto updatedContactDto, IUserContactService contactService) =>
+            routes.MapPut("/contacts", async (ContactDto updatedContactDto, IUserContactService contactService, IValidator<ContactDto> validator) =>
             {
+                // Validate updatedContactDto using ContactValidator
+                var validationResult = await validator.ValidateAsync(updatedContactDto);
+                if (!validationResult.IsValid)
+                {
+                    return Results.ValidationProblem(validationResult.ToDictionary());
+                }
+
                 var contact = await contactService.UpdateContactAsync(updatedContactDto);
                 return contact is not null ? Results.Ok(contact) : Results.NotFound();
             });
