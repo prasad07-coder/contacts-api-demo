@@ -1,4 +1,4 @@
-﻿namespace UserContactsApi.Tests
+﻿namespace UserContactsApi.Tests.Tests
 {
     using Microsoft.EntityFrameworkCore;
     using UserContactsApi.Data;
@@ -86,6 +86,7 @@
             Assert.NotNull(result);
             Assert.Equal(contact.FirstName, result.FirstName);
         }
+
 
         /// <summary>
         /// The GetAllContactsAsync_ShouldReturnAllContacts
@@ -239,6 +240,40 @@
         {
             _context.Database.EnsureDeleted();
             _context.Dispose();
+            GC.SuppressFinalize(this);
+        }
+        /// <summary>
+        /// The GetContactByIdAsync_ContactNotFound_ShouldReturnNull
+        /// </summary>
+        /// <returns>The <see cref="Task"/></returns>
+        [Fact]
+        public async Task GetContactByIdAsync_ContactNotFound_ShouldReturnNull()
+        {
+            // Arrange
+            var nonExistentId = 999; // Assuming this ID does not exist in the database
+
+            // Act
+            var result = await _repository.GetContactByIdAsync(nonExistentId);
+
+            // Assert
+            Assert.Null(result);
+        }
+        public async Task<ContactDto> GetContactByIdAsync(int id)
+        {
+            var contact = await _context.Contacts.FindAsync(id);
+            if (contact == null)
+            {
+                throw new ArgumentException("Contact not found");
+            }
+
+            return new ContactDto
+            {
+                Id = contact.Id,
+                FirstName = contact.FirstName,
+                LastName = contact.LastName,
+                Email = contact.Email,
+                Phone = contact.Phone
+            };
         }
     }
 

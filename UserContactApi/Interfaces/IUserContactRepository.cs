@@ -12,7 +12,7 @@ namespace UserContactProject.Interfaces
         /// </summary>
         /// <param name="id">The id<see cref="int"/></param>
         /// <returns>The <see cref="Task{ContactDto}"/></returns>
-        Task<ContactDto> GetContactByIdAsync(int id);
+        Task<ContactDto?> GetContactByIdAsync(int id);
 
         /// <summary>
         /// The GetAllContactsAsync

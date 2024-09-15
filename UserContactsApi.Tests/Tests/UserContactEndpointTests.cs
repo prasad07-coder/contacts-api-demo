@@ -1,4 +1,4 @@
-﻿namespace UserContactsApi.Tests
+﻿namespace UserContactsApi.Tests.Tests
 {
     using Microsoft.AspNetCore.Mvc.Testing;
     using Microsoft.Extensions.DependencyInjection;
@@ -11,27 +11,21 @@
     /// <summary>
     /// Defines the <see cref="ContactEndpointsTests" />
     /// </summary>
-    public class ContactEndpointsTests : IClassFixture<WebApplicationFactory<Program>>
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="ContactEndpointsTests"/> class.
+    /// </remarks>
+    /// <param name="factory">The factory<see cref="WebApplicationFactory{Program}"/></param>
+    public class ContactEndpointsTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
     {
         /// <summary>
         /// Defines the _factory
         /// </summary>
-        private readonly WebApplicationFactory<Program> _factory;
+        private readonly WebApplicationFactory<Program> _factory = factory;
 
         /// <summary>
         /// Defines the _mockService
         /// </summary>
-        private readonly Mock<IUserContactService> _mockService;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ContactEndpointsTests"/> class.
-        /// </summary>
-        /// <param name="factory">The factory<see cref="WebApplicationFactory{Program}"/></param>
-        public ContactEndpointsTests(WebApplicationFactory<Program> factory)
-        {
-            _factory = factory;
-            _mockService = new Mock<IUserContactService>();
-        }
+        private readonly Mock<IUserContactService> _mockService = new();
 
         /// <summary>
         /// The GetAllContacts_ShouldReturnOkWithContacts
@@ -43,8 +37,8 @@
             // Arrange
             var contacts = new List<ContactDto>
         {
-            new ContactDto { Id = 1, FirstName = "Alice", LastName = "Smith", Email = "alice@example.com", Phone = "123456" },
-            new ContactDto { Id = 2, FirstName = "Bob", LastName = "Johnson", Email = "bob@example.com", Phone = "654321" }
+            new() { Id = 1, FirstName = "Alice", LastName = "Smith", Email = "alice@example.com", Phone = "123456" },
+            new() { Id = 2, FirstName = "Bob", LastName = "Johnson", Email = "bob@example.com", Phone = "654321" }
         };
             _mockService.Setup(service => service.GetAllContactsAsync()).ReturnsAsync(contacts);
 
@@ -63,7 +57,7 @@
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var result = await response.Content.ReadFromJsonAsync<List<ContactDto>>();
             Assert.NotNull(result);
-            Assert.Equal(2, result.Count());
+            Assert.Equal(2, result.Count);
         }
 
         /// <summary>
@@ -150,7 +144,6 @@
             Assert.Equal(contactDto.Id, result.Id);
         }
 
-        //create unit test for update success
 
         /// <summary>
         /// The UpdateContact_ShouldReturnMethodNotAllowed_WhenHttpMethodIsNotAllowed
@@ -210,6 +203,31 @@
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+        /// <summary>
+        /// The AddContact_ShouldReturnBadRequest_WhenContactIsInvalid
+        /// </summary>
+        /// <returns>The <see cref="Task"/></returns>
+        [Fact]
+        public async Task AddContact_ShouldReturnBadRequest_WhenContactIsInvalid()
+        {
+            // Arrange
+            var invalidContactDto = new ContactDto { Id = 1, FirstName = "", LastName = "", Email = "invalid-email", Phone = "123" };
+            _mockService.Setup(service => service.AddContactAsync(It.IsAny<ContactDto>())).ThrowsAsync(new ArgumentException("Invalid contact"));
+
+            var client = _factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    services.AddSingleton(_mockService.Object);
+                });
+            }).CreateClient();
+
+            // Act
+            var response = await client.PostAsJsonAsync("/contacts", invalidContactDto);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
     }
 }

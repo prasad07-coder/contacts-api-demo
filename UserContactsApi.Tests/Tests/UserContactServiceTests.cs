@@ -1,4 +1,4 @@
-﻿namespace UserContactsApi.Tests
+﻿namespace UserContactsApi.Tests.Tests
 {
     using Moq;
     using UserContactProject.Interfaces;
@@ -68,8 +68,8 @@
             // Arrange
             var contacts = new List<ContactDto>
             {
-                new ContactDto { Id = 1, FirstName = "Alice", LastName = "Johnson", Email = "alice@example.com", Phone = "111222333" },
-                new ContactDto { Id = 2, FirstName = "Bob", LastName = "Smith", Email = "bob@example.com", Phone = "444555666" }
+                new() { Id = 1, FirstName = "Alice", LastName = "Johnson", Email = "alice@example.com", Phone = "111222333" },
+                new() { Id = 2, FirstName = "Bob", LastName = "Smith", Email = "bob@example.com", Phone = "444555666" }
             };
             _mockRepository.Setup(repo => repo.GetAllContactsAsync())
                 .ReturnsAsync(contacts);

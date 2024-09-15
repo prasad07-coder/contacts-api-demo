@@ -9,33 +9,28 @@ namespace UserContactsApi.Repositories
     /// <summary>
     /// Defines the <see cref="UserContactRepository" />
     /// </summary>
-    public class UserContactRepository : IUserContactRepository
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="UserContactRepository"/> class.
+    /// </remarks>
+    /// <param name="context">The context<see cref="UserContactsDbContext"/></param>
+    public class UserContactRepository(UserContactsDbContext context) : IUserContactRepository
     {
         /// <summary>
         /// Defines the _context
         /// </summary>
-        private readonly UserContactsDbContext _context;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UserContactRepository"/> class.
-        /// </summary>
-        /// <param name="context">The context<see cref="UserContactsDbContext"/></param>
-        public UserContactRepository(UserContactsDbContext context)
-        {
-            _context = context;
-        }
+        private readonly UserContactsDbContext _context = context;
 
         /// <summary>
         /// The GetContactByIdAsync
         /// </summary>
         /// <param name="id">The id<see cref="int"/></param>
         /// <returns>The <see cref="Task{ContactDto}"/></returns>
-        public async Task<ContactDto> GetContactByIdAsync(int id)
+        public async Task<ContactDto?> GetContactByIdAsync(int id)
         {
             var contact = await _context.Contacts.FindAsync(id);
             if (contact == null)
             {
-                throw new ArgumentException("Contact not found"); ;
+                return null;
             }
 
             return new ContactDto
